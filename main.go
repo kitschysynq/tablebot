@@ -59,7 +59,7 @@ func main() {
 
 	robot := gobot.NewRobot("tablebot",
 		[]gobot.Connection{r},
-		[]gobot.Device{ctl.led},
+		[]gobot.Device{ctl},
 		work,
 	)
 
@@ -70,6 +70,23 @@ type controller struct {
 	on  bool
 	buf []byte
 	led *ht16k33.HT16K33Driver
+}
+
+func (c *controller) Name() string                 { return c.led.Name() }
+func (c *controller) SetName(s string)             { c.led.SetName(s) }
+func (c *controller) Connection() gobot.Connection { return c.led.Connection() }
+func (c *controller) Halt() error                  { return c.led.Halt() }
+
+// Start initiates the Driver
+func (c *controller) Start() error {
+	err := c.led.Start()
+	if err != nil {
+		return err
+	}
+
+	c.led.SetLEDs(c.buf)
+	c.led.Show()
+	return nil
 }
 
 func (c *controller) Toggle() {
