@@ -33,6 +33,32 @@ var (
 	}
 )
 
+var charset = map[string]byte{
+	"0": 0x7E,
+	"1": 0x30,
+	"2": 0x6D,
+	"3": 0x79,
+	"4": 0x33,
+	"5": 0x5B,
+	"6": 0x5F,
+	"7": 0x70,
+	"8": 0x7F,
+	"9": 0x7B,
+}
+
+var numerals = map[int]byte{
+	0: 0x7E,
+	1: 0x30,
+	2: 0x6D,
+	3: 0x79,
+	4: 0x33,
+	5: 0x5B,
+	6: 0x5F,
+	7: 0x70,
+	8: 0x7F,
+	9: 0x7B,
+}
+
 func main() {
 	r := raspi.NewAdaptor()
 	ctl := &controller{
@@ -65,9 +91,9 @@ func main() {
 }
 
 type controller struct {
-	on  bool
-	buf []byte
-	led *ht16k33.HT16K33Driver
+	count int
+	buf   []byte
+	led   *ht16k33.HT16K33Driver
 }
 
 func (c *controller) Name() string                 { return c.led.Name() }
@@ -88,20 +114,10 @@ func (c *controller) Start() error {
 }
 
 func (c *controller) Toggle() {
-	/*
-		if c.on {
-			c.led.SetLEDs(AllOff)
-			c.on = false
-		} else {
-			c.led.SetLEDs(AllOn)
-			c.on = true
-		}
-	*/
 	for i := range c.buf {
-		c.buf[i] = rotate(c.buf[i]) & 0x7E
-		if c.buf[i] == 0x00 {
-			c.buf[i] = 0x02
-		}
+		c.buf[i] = numerals[c.count]
+		c.count++
+		c.count %= 10
 	}
 
 	c.led.SetLEDs(c.buf)
