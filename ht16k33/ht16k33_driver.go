@@ -125,7 +125,27 @@ func (d *HT16K33Driver) Start() (err error) {
 }
 
 // Halt terminates the Driver
-func (d *HT16K33Driver) Halt() error {
+func (d *HT16K33Driver) Halt() (err error) {
+	bus := d.GetBusOrDefault(d.connector.GetDefaultBus())
+	address := d.GetAddressOrDefault(ht16k33DefaultAddress)
+
+	d.connection, err = d.connector.GetConnection(address, bus)
+	if err != nil {
+		return err
+	}
+
+	// Turn the display off
+	err = d.connection.WriteByte(ht16k33DisplaySetup | 0x00)
+	if err != nil {
+		return err
+	}
+
+	// Stop the system clock
+	err = d.connection.WriteByte(ht16k33SystemSetup | 0x00)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
