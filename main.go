@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"gobot.io/x/gobot"
@@ -52,7 +51,6 @@ func main() {
 
 	work := func() {
 		gobot.Every(100*time.Millisecond, func() {
-			fmt.Printf("state: %#0x\n", ctl.buf[0])
 			ctl.Toggle()
 		})
 	}
