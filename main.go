@@ -2,7 +2,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"time"
 
 	"gobot.io/x/gobot"
@@ -34,6 +33,18 @@ var (
 	}
 )
 
+var chars = []string{
+	"0", "1", "2", "3",
+	"4", "5", "6", "7",
+	"8", "9", "A", "B",
+	"C", "D", "E", "F",
+	"G", "H", "I", "J",
+	"K", "L", "M", "N",
+	"O", "P", "Q", "R",
+	"S", "T", "U", "V",
+	"W", "X", "Y", "Z",
+}
+
 var charset = map[string]byte{
 	"0": 0x7E,
 	"1": 0x30,
@@ -51,6 +62,26 @@ var charset = map[string]byte{
 	"D": 0x3D,
 	"E": 0x4F,
 	"F": 0x47,
+	"G": 0x5E,
+	"H": 0x17,
+	"I": 0x06,
+	"J": 0x3C,
+	"K": 0x57,
+	"L": 0x0E,
+	"M": 0x55,
+	"N": 0x15,
+	"O": 0x1D,
+	"P": 0x67,
+	"Q": 0x73,
+	"R": 0x05,
+	"S": 0x5B,
+	"T": 0x0F,
+	"U": 0x1C,
+	"V": 0x3E,
+	"W": 0x2B,
+	"X": 0x37,
+	"Y": 0x3B,
+	"Z": 0x6C,
 }
 
 var numerals = map[int]byte{
@@ -102,7 +133,7 @@ func main() {
 	}
 
 	work := func() {
-		gobot.Every(100*time.Millisecond, func() {
+		gobot.Every(500*time.Millisecond, func() {
 			ctl.Toggle()
 		})
 	}
@@ -118,6 +149,7 @@ func main() {
 
 type controller struct {
 	count uint16
+	chars []string
 	buf   []byte
 	led   *ht16k33.HT16K33Driver
 }
@@ -140,15 +172,13 @@ func (c *controller) Start() error {
 }
 
 func (c *controller) Toggle() {
-	countBytes := make([]byte, 2)
-	binary.BigEndian.PutUint16(countBytes, c.count)
-
-	c.buf[0] = nibble[(countBytes[0]&0xF0)>>4]
-	c.buf[2] = nibble[(countBytes[0]&0x0F)>>0]
-	c.buf[4] = nibble[(countBytes[1]&0xF0)>>4]
-	c.buf[6] = nibble[(countBytes[1]&0x0F)>>0]
+	c.buf[0] = charset[chars[c.count]]
+	c.buf[2] = charset[chars[c.count]]
+	c.buf[4] = charset[chars[c.count]]
+	c.buf[6] = charset[chars[c.count]]
 
 	c.count++
+	c.count %= uint16(len(chars))
 
 	c.led.SetLEDs(c.buf)
 	c.led.Show()
